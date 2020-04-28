@@ -1,13 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using dotnetapi.Model;
+using dotnetapi.Model.Context;
 
 namespace dotnetapi.Services.Implementations {
     public class PersonServiceImplementation : IPersonService {
+
+        private MySQLContext _context;
+
+        public PersonServiceImplementation (MySQLContext context) {
+            _context = context;
+        }
+
         private volatile int count;
 
         public Person Create (Person person) {
+            try {
+                _context.Add (person);
+                _context.SaveChanges ();
+            } catch (Exception error) {
+
+                throw error;
+            }
             return person;
         }
 
@@ -38,13 +54,7 @@ namespace dotnetapi.Services.Implementations {
         }
 
         public Person FindById (long id) {
-            return new Person {
-                Id = IncrementAndGet (),
-                    FirstName = "Ruan",
-                    LastName = "Linos",
-                    Address = "Guarapuava/PR",
-                    Gender = "M"
-            };
+            return _context.persons.SingleOrDefault (p => p.Id.Equals (id));
         }
 
         public Person Update (Person person) {
